@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M3U Kanal Seçici</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #161a23;
+    --surface2: #1e2433;
+    --border: #2a3045;
+    --accent: #4f8ef7;
+    --accent2: #7c3aed;
+    --green: #22c55e;
+    --red: #ef4444;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --hover: #252d3d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+
+  .header-stats {
+    margin-left: auto;
+    display: flex;
+    gap: 20px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .stat span {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* Upload screen */
+  #upload-screen {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .upload-box {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 60px 80px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+  }
+
+  .upload-box:hover, .upload-box.drag-over {
+    border-color: var(--accent);
+    background: var(--hover);
+  }
+
+  .upload-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+  }
+
+  .upload-box h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .upload-box p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #3a7af5; transform: translateY(-1px); }
+
+  .btn-success {
+    background: var(--green);
+    color: #fff;
+  }
+  .btn-success:hover { background: #16a34a; transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--hover); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: 4px 10px;
+    font-size: 0.75rem;
+  }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+
+  /* Main app */
+  #app-screen {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .toolbar {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    flex-wrap: wrap;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  #search-input {
+    width: 100%;
+    padding: 9px 12px 9px 36px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  #search-input:focus { border-color: var(--accent); }
+  #search-input::placeholder { color: var(--muted); }
+
+  .group-filter {
+    padding: 9px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    outline: none;
+    cursor: pointer;
+    min-width: 160px;
+  }
+
+  .group-filter:focus { border-color: var(--accent); }
+
+  /* Columns layout */
+  .columns {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    gap: 0;
+    min-height: 0;
+  }
+
+  .column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid var(--border);
+  }
+
+  .column:last-child { border-right: none; }
+
+  .col-header {
+    padding: 12px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .col-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .col-count {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+
+  .channel-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px;
+  }
+
+  .channel-list::-webkit-scrollbar { width: 5px; }
+  .channel-list::-webkit-scrollbar-track { background: transparent; }
+  .channel-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .channel-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.12s;
+    border: 1px solid transparent;
+  }
+
+  .channel-item:hover {
+    background: var(--hover);
+    border-color: var(--border);
+  }
+
+  .channel-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: contain;
+    background: var(--surface2);
+    flex-shrink: 0;
+  }
+
+  .channel-logo-fallback {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: var(--muted);
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+
+  .channel-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .channel-name {
+    font-size: 0.82rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .channel-group {
+    font-size: 0.7rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .add-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: all 0.12s;
+  }
+
+  .add-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .remove-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    transition: all 0.12s;
+  }
+
+  .remove-btn:hover { background: var(--red); color: #fff; }
+
+  /* Selected list drag indicators */
+  .channel-item.drag-over-top { border-top: 2px solid var(--accent); }
+  .channel-item.drag-over-bottom { border-bottom: 2px solid var(--accent); }
+  .channel-item.dragging { opacity: 0.4; }
+
+  .drag-handle {
+    color: var(--muted);
+    cursor: grab;
+    font-size: 0.8rem;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+
+  .drag-handle:active { cursor: grabbing; }
+
+  /* Empty state */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    padding: 40px;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .empty-state .icon { font-size: 2.5rem; opacity: 0.4; }
+  .empty-state p { font-size: 0.82rem; }
+
+  /* Footer */
+  .col-footer {
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Loading overlay */
+  #loading {
+    position: fixed;
+    inset: 0;
+    background: rgba(13,15,20,0.92);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    gap: 16px;
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #loading p { color: var(--muted); font-size: 0.85rem; }
+
+  /* Notification */
+  .notif {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--green);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    animation: slideUp 0.3s ease;
+    z-index: 200;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .select-all-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    transition: all 0.12s;
+  }
+  .select-all-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Save-as modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  }
+
+  .modal h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .modal-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: -8px;
+  }
+
+  .modal-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .modal-input:focus { border-color: var(--accent); }
+
+  .modal-ext {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: -8px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+
+  .channel-list.drop-target {
+    background: rgba(79,142,247,0.06);
+    outline: 2px dashed var(--accent);
+    outline-offset: -4px;
+    border-radius: 8px;
+  }
+
+  .highlight {
+    background: rgba(79,142,247,0.25);
+    border-radius: 2px;
+  }
+
+  .copyright {
+    text-align: center;
+    padding: 5px;
+    font-size: 0.68rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .copyright span { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">📺 M3U Kanal Seçici</div>
+  <div class="header-stats" id="header-stats" style="display:none">
+    <div class="stat">Toplam: <span id="stat-total">0</span></div>
+    <div class="stat">Filtrelenen: <span id="stat-filtered">0</span></div>
+    <div class="stat">Seçilen: <span id="stat-selected">0</span></div>
+  </div>
+</header>
+
+<div id="loading" style="display:none">
+  <div class="spinner"></div>
+  <p id="loading-text">Dosya yükleniyor...</p>
+</div>
+
+<!-- Upload Screen -->
+<div id="upload-screen">
+  <div class="upload-box" id="drop-zone">
+    <div class="upload-icon">📂</div>
+    <h2>.m3u Dosyası Yükle</h2>
+    <p>Dosyayı buraya sürükleyin veya seçmek için tıklayın</p>
+    <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+      Dosya Seç
+    </button>
+    <input type="file" id="file-input" accept=".m3u,.m3u8" style="display:none">
+  </div>
+</div>
+
+<!-- App Screen -->
+<div id="app-screen" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Kanal adı ara..." oninput="onSearch()">
+    </div>
+    <select class="group-filter" id="group-filter" onchange="onSearch()">
+      <option value="">Tüm Gruplar</option>
+    </select>
+    <button class="btn btn-ghost" onclick="document.getElementById('file-input2').click()" style="font-size:0.8rem">
+      📂 Farklı Dosya
+    </button>
+    <input type="file" id="file-input2" accept=".m3u,.m3u8" style="display:none">
+  </div>
+
+  <div class="columns">
+    <!-- Left: All channels -->
+    <div class="column">
+      <div class="col-header">
+        <span class="col-title">Kanal Listesi</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="select-all-btn" onclick="addAllFiltered()">Tümünü Ekle</button>
+          <span class="col-count" id="left-count">0</span>
+        </div>
+      </div>
+      <div class="channel-list" id="left-list"></div>
+    </div>
+
+    <!-- Right: Selected channels -->
+    <div class="column">
+      <div class="col-header">
+        <span class="col-title">Seçilen Kanallar</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="select-all-btn" onclick="clearSelected()" style="border-color:var(--red);color:var(--red)">Temizle</button>
+          <span class="col-count" id="right-count">0</span>
+        </div>
+      </div>
+      <div class="channel-list" id="right-list" 
+           ondragover="onDragOver(event)" 
+           ondragleave="this.classList.remove('drop-target')"
+           ondrop="onDrop(event)">
+        <div class="empty-state" id="right-empty">
+          <div class="icon">➕</div>
+          <p>Kanalların üzerindeki <strong style="color:var(--accent)">+</strong> butonuna tıklayarak<br>veya <strong style="color:var(--accent)">sürükleyip bırakarak</strong> buraya ekleyin</p>
+        </div>
+      </div>
+      <div class="col-footer">
+        <button class="btn btn-success" onclick="exportM3U('quick')" style="flex:1">
+          💾 Kaydet
+        </button>
+        <button class="btn btn-ghost" onclick="openSaveAs()" style="flex:1">
+          📝 Farklı Kaydet
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Save-As Modal -->
+<div class="modal-overlay" id="saveas-modal" style="display:none" onclick="if(event.target===this)closeSaveAs()">
+  <div class="modal">
+    <h3>💾 Farklı Kaydet</h3>
+    <p class="modal-desc"><span id="saveas-count">0</span> kanal kaydedilecek</p>
+    <div>
+      <input type="text" class="modal-input" id="saveas-name" placeholder="Dosya adı..." value="secilen_kanallar">
+      <p class="modal-ext">.m3u uzantısı otomatik eklenecek</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeSaveAs()">İptal</button>
+      <button class="btn btn-success" onclick="doSaveAs()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let allChannels = [];
+let selected = [];
+let filteredChannels = [];
+let dragSrcIndex = null;
+
+// ── File input handlers ──────────────────────────────
+document.getElementById('file-input').addEventListener('change', e => loadFile(e.target.files[0]));
+document.getElementById('file-input2').addEventListener('change', e => loadFile(e.target.files[0]));
+
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+
+function loadFile(file) {
+  if (!file) return;
+  showLoading('Dosya okunuyor...');
+  const reader = new FileReader();
+  reader.onload = e => {
+    showLoading('Kanallar ayrıştırılıyor...');
+    setTimeout(() => {
+      parseM3U(e.target.result);
+      hideLoading();
+    }, 50);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ── Parse M3U ────────────────────────────────────────
+function parseM3U(text) {
+  allChannels = [];
+  const lines = text.split(/\r?\n/);
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i].trim();
+    if (line.startsWith('#EXTINF')) {
+      const url = lines[i + 1]?.trim();
+      if (url && !url.startsWith('#')) {
+        const nameMatch = line.match(/,(.+)$/);
+        const logoMatch = line.match(/tvg-logo="([^"]*)"/);
+        const groupMatch = line.match(/group-title="([^"]*)"/);
+        const idMatch = line.match(/tvg-id="([^"]*)"/);
+        allChannels.push({
+          id: allChannels.length,
+          extinf: line,
+          url: url,
+          name: nameMatch ? nameMatch[1].trim() : 'Bilinmeyen',
+          logo: logoMatch ? logoMatch[1] : '',
+          group: groupMatch ? groupMatch[1].trim() : 'Diğer',
+          tvgId: idMatch ? idMatch[1] : ''
+        });
+        i += 2;
+        continue;
+      }
+    }
+    i++;
+  }
+
+  // Build groups
+  const groups = [...new Set(allChannels.map(c => c.group))].sort();
+  const sel = document.getElementById('group-filter');
+  sel.innerHTML = '<option value="">Tüm Gruplar</option>';
+  groups.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g;
+    opt.textContent = g + ' (' + allChannels.filter(c=>c.group===g).length + ')';
+    sel.appendChild(opt);
+  });
+
+  document.getElementById('stat-total').textContent = allChannels.length;
+  document.getElementById('header-stats').style.display = 'flex';
+  document.getElementById('upload-screen').style.display = 'none';
+  const appEl = document.getElementById('app-screen');
+  appEl.style.display = 'flex';
+
+  onSearch();
+}
+
+// ── Search / Filter ──────────────────────────────────
+function onSearch() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const g = document.getElementById('group-filter').value;
+  filteredChannels = allChannels.filter(c => {
+    const matchQ = !q || c.name.toLowerCase().includes(q);
+    const matchG = !g || c.group === g;
+    return matchQ && matchG;
+  });
+  document.getElementById('stat-filtered').textContent = filteredChannels.length;
+  document.getElementById('left-count').textContent = filteredChannels.length;
+  renderLeft();
+}
+
+// ── Render Left ──────────────────────────────────────
+function renderLeft() {
+  const container = document.getElementById('left-list');
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const selectedIds = new Set(selected.map(c => c.id));
+
+  if (filteredChannels.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">🔍</div><p>Sonuç bulunamadı</p></div>`;
+    return;
+  }
+
+  // Virtual render for performance (max 500 shown)
+  const toShow = filteredChannels.slice(0, 1000);
+  container.innerHTML = '';
+  const frag = document.createDocumentFragment();
+
+  toShow.forEach(ch => {
+    const div = document.createElement('div');
+    div.className = 'channel-item';
+    div.dataset.id = ch.id;
+
+    const inSelected = selectedIds.has(ch.id);
+
+    let logoHtml = ch.logo
+      ? `<img class="channel-logo" src="${ch.logo}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><div class="channel-logo-fallback" style="display:none">TV</div>`
+      : `<div class="channel-logo-fallback">TV</div>`;
+
+    let nameHtml = ch.name;
+    if (q) {
+      const idx = ch.name.toLowerCase().indexOf(q);
+      if (idx >= 0) {
+        nameHtml = ch.name.slice(0, idx) + `<mark class="highlight">${ch.name.slice(idx, idx+q.length)}</mark>` + ch.name.slice(idx+q.length);
+      }
+    }
+
+    div.innerHTML = `
+      ${logoHtml}
+      <div class="channel-info">
+        <div class="channel-name">${nameHtml}</div>
+        <div class="channel-group">${ch.group}</div>
+      </div>
+      <button class="add-btn" title="Seçilenlere ekle" onclick="addChannel(${ch.id})" ${inSelected ? 'style="background:var(--accent);color:#fff;border-color:var(--accent)"' : ''}>
+        ${inSelected ? '✓' : '+'}
+      </button>
+    `;
+
+    // Drag from left to right
+    div.draggable = true;
+    div.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', String(ch.id));
+      e.dataTransfer.effectAllowed = 'copy';
+      div.style.opacity = '0.5';
+    });
+    div.addEventListener('dragend', () => div.style.opacity = '');
+
+    frag.appendChild(div);
+  });
+
+  if (filteredChannels.length > 1000) {
+    const note = document.createElement('div');
+    note.style.cssText = 'text-align:center;padding:16px;color:var(--muted);font-size:0.75rem';
+    note.textContent = `... ${filteredChannels.length - 1000} kanal daha. Aramayı daraltın.`;
+    frag.appendChild(note);
+  }
+
+  container.appendChild(frag);
+}
+
+// ── Render Right ─────────────────────────────────────
+function renderRight() {
+  const container = document.getElementById('right-list');
+  document.getElementById('right-empty').style.display = selected.length ? 'none' : 'flex';
+  document.getElementById('stat-selected').textContent = selected.length;
+  document.getElementById('right-count').textContent = selected.length;
+
+  // Remove old items (keep empty state)
+  Array.from(container.querySelectorAll('.channel-item')).forEach(el => el.remove());
+
+  const frag = document.createDocumentFragment();
+  selected.forEach((ch, idx) => {
+    const div = document.createElement('div');
+    div.className = 'channel-item';
+    div.draggable = true;
+    div.dataset.idx = idx;
+
+    let logoHtml = ch.logo
+      ? `<img class="channel-logo" src="${ch.logo}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy"><div class="channel-logo-fallback" style="display:none">TV</div>`
+      : `<div class="channel-logo-fallback">TV</div>`;
+
+    div.innerHTML = `
+      <span class="drag-handle" title="Sürükle">⠿</span>
+      ${logoHtml}
+      <div class="channel-info">
+        <div class="channel-name">${ch.name}</div>
+        <div class="channel-group">${ch.group}</div>
+      </div>
+      <button class="remove-btn" title="Kaldır" onclick="removeChannel(${idx})">✕</button>
+    `;
+
+    div.addEventListener('dragstart', () => {
+      dragSrcIndex = idx;
+      div.classList.add('dragging');
+    });
+    div.addEventListener('dragend', () => div.classList.remove('dragging'));
+    div.addEventListener('dragover', e => {
+      e.preventDefault();
+      const rect = div.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      container.querySelectorAll('.channel-item').forEach(el => {
+        el.classList.remove('drag-over-top', 'drag-over-bottom');
+      });
+      div.classList.add(e.clientY < mid ? 'drag-over-top' : 'drag-over-bottom');
+    });
+    div.addEventListener('dragleave', () => {
+      div.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+    div.addEventListener('drop', e => {
+      e.preventDefault();
+      div.classList.remove('drag-over-top', 'drag-over-bottom');
+      const rect = div.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      let targetIdx = parseInt(div.dataset.idx);
+      if (e.clientY >= mid) targetIdx += 1;
+      if (dragSrcIndex === null || dragSrcIndex === targetIdx) return;
+      const [moved] = selected.splice(dragSrcIndex, 1);
+      const insertAt = dragSrcIndex < targetIdx ? targetIdx - 1 : targetIdx;
+      selected.splice(insertAt, 0, moved);
+      dragSrcIndex = null;
+      renderRight();
+    });
+
+    frag.appendChild(div);
+  });
+  container.appendChild(frag);
+}
+
+function onDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'copy';
+  document.getElementById('right-list').classList.add('drop-target');
+}
+
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('right-list').classList.remove('drop-target');
+  const id = parseInt(e.dataTransfer.getData('text/plain'));
+  if (!isNaN(id)) addChannel(id);
+}
+
+// ── Add / Remove ─────────────────────────────────────
+function addChannel(id) {
+  const ch = allChannels.find(c => c.id === id);
+  if (!ch || selected.find(c => c.id === id)) return;
+  selected.push(ch);
+  renderRight();
+  renderLeft(); // update checkmarks
+}
+
+function removeChannel(idx) {
+  selected.splice(idx, 1);
+  renderRight();
+  renderLeft();
+}
+
+function addAllFiltered() {
+  const selectedIds = new Set(selected.map(c => c.id));
+  const toAdd = filteredChannels.filter(c => !selectedIds.has(c.id));
+  selected.push(...toAdd);
+  renderRight();
+  renderLeft();
+  showNotif(`${toAdd.length} kanal eklendi`);
+}
+
+function clearSelected() {
+  if (!selected.length) return;
+  if (!confirm('Tüm seçilen kanalları kaldırmak istiyor musunuz?')) return;
+  selected = [];
+  renderRight();
+  renderLeft();
+}
+
+// ── Export M3U ───────────────────────────────────────
+function buildM3UContent() {
+  let content = '#EXTM3U\n';
+  selected.forEach(ch => {
+    content += ch.extinf + '\n' + ch.url + '\n';
+  });
+  return content;
+}
+
+function exportM3U(mode) {
+  if (!selected.length) { alert('Lütfen önce kanal seçin.'); return; }
+  doDownload('secilen_kanallar.m3u', buildM3UContent());
+  showNotif(`${selected.length} kanal kaydedildi ✓`);
+}
+
+function openSaveAs() {
+  if (!selected.length) { alert('Lütfen önce kanal seçin.'); return; }
+  document.getElementById('saveas-count').textContent = selected.length;
+  document.getElementById('saveas-modal').style.display = 'flex';
+  const inp = document.getElementById('saveas-name');
+  inp.focus();
+  inp.select();
+  inp.onkeydown = e => { if (e.key === 'Enter') doSaveAs(); if (e.key === 'Escape') closeSaveAs(); };
+}
+
+function closeSaveAs() {
+  document.getElementById('saveas-modal').style.display = 'none';
+}
+
+function doSaveAs() {
+  let name = document.getElementById('saveas-name').value.trim() || 'secilen_kanallar';
+  name = name.replace(/\.m3u8?$/i, '');
+  doDownload(name + '.m3u', buildM3UContent());
+  showNotif(`"${name}.m3u" kaydedildi ✓`);
+  closeSaveAs();
+}
+
+function doDownload(filename, content) {
+  const blob = new Blob([content], { type: 'application/x-mpegurl' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+// ── Helpers ───────────────────────────────────────────
+function showLoading(txt) {
+  document.getElementById('loading-text').textContent = txt;
+  document.getElementById('loading').style.display = 'flex';
+}
+function hideLoading() {
+  document.getElementById('loading').style.display = 'none';
+}
+
+function showNotif(msg) {
+  const n = document.createElement('div');
+  n.className = 'notif';
+  n.textContent = msg;
+  document.body.appendChild(n);
+  setTimeout(() => n.remove(), 2500);
+}
+</script>
+<footer class="copyright">© <span>2026</span> KemaL Arda — Tüm hakları saklıdır.</footer>
+</body>
+</html>
