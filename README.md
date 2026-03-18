@@ -1,4 +1,4 @@
-# m3u-D-zenleyici
+# IPTV m3u playlist editor
 
 https://nitrq10-sys.github.io/m3u-D-zenleyici/m3u_kanal_secici(v3).html
 
