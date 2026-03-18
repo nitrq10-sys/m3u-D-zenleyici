@@ -1,4 +1,7 @@
 # m3u-D-zenleyici
+
+https://nitrq10-sys.github.io/m3u-D-zenleyici/m3u_kanal_secici(v2).html
+
 M3u Kanal Listenizi Düzenleyin
 
 Nasıl kullanılır
