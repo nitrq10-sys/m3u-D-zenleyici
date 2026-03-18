@@ -34,3 +34,6 @@ Sayfa tam ekrana sığıyor — kanal listeleri sayfayı taşırmak yerine kendi
 
 📝 Farklı Kaydet — açılan modal'dan dosya adı yazıp kaydedebilirsin (Enter ile de çalışır)
 
+ V3
+
+ Kanalları Sürükle bırak özelliği eklendi
