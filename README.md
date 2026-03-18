@@ -37,3 +37,4 @@ Sayfa tam ekrana sığıyor — kanal listeleri sayfayı taşırmak yerine kendi
  V3
 
  Kanalları Sürükle bırak özelliği eklendi
+ Artık sol listeden kanalları sağ listeye sürükleyip bırakabilirsin — bırakma alanı mavi çerçeve ile vurgulanıyor.
